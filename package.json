@@ -7,10 +7,15 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "set-admin": "node --env-file=.env scripts/set-admin.mjs"
   },
   "devDependencies": {
+    "firebase-admin": "^13.10.0",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "firebase": "^11.10.0"
   }
 }

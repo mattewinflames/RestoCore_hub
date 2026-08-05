@@ -1,7 +1,7 @@
 # RestoCore Hub — RIPRENDI QUI
 
 > Fotografia del presente (05/08/2026). Per la cronologia vedi `docs/REGISTRO-SVILUPPO.md`
-> (ultima voce **#0**). Questo file si sovrascrive; non è un changelog.
+> (ultima voce **#1**). Questo file si sovrascrive; non è un changelog.
 
 ## Cos'è
 Il **control plane** di RestoCore (architettura C, decisa il 05/08). Progetto **separato**
@@ -27,12 +27,24 @@ condividono con una dipendenza controllata, non fondendo i due progetti.
 - **Dominio dell'approval gate** completo e testato (#0): stati
   `bozza → in_revisione → approvato → attivo → sospeso`, ruoli `owner`/`admin`, transizioni
   come fonte di verità unica, `can`/`apply`/`availableActions` puri e immutabili.
-- **18 test verdi**, `tsc` pulito. Nessuna persistenza né UI ancora (per scelta).
+- **Fondazione auth + identità** (#1): due provider (email/password + Google), init Firebase
+  del progetto HUB, wrapper auth con errori in italiano, derivazione del ruolo dai custom
+  claim (`admin` = claim server-side, fail-safe verso `owner`), script `set-admin` per
+  nominarti super-admin. Headless (nessuna UI ancora).
+- **23 test verdi**, `tsc` pulito. Persistenza (Firestore) e UI ancora assenti, per scelta.
+
+## Da fare in console (una volta)
+- Creare il progetto Firebase **HUB** (separato), riempire `.env` da `.env.example`.
+- Authentication → Sign-in method: abilitare **Email/Password** e **Google**.
+- Dopo esserti registrato la prima volta: `npm run set-admin -- tua@email` per nominarti admin.
 
 ## Prossimi passi (in ordine)
 1. **Dato + regole Firestore**: doc `locali/{id}` con `status`, store read/write, regole che
-   **rispecchiano `TRANSITIONS`** (un owner scrive solo il proprio, solo l'admin approva).
-2. **Auth ristoratori + custom claim `admin`** per Matteo (il super-admin che vede tutti).
+   **rispecchiano `TRANSITIONS`** (#0) usando `request.auth.uid` (owner) e il claim `admin`
+   (#1) — un owner scrive solo il proprio, solo l'admin approva.
+2. **UI di login/registrazione** (Vite/React): la faccia dei wrapper auth (#1), con i due
+   provider. È il primo pezzo che potrai avviare e provare. Qui entra Vite → sostituire la
+   dichiarazione manuale in `src/vite-env.d.ts` con `vite/client`.
 3. **Shell del cruscotto**: lista dei locali in `in_revisione` + azioni approve/reject
    (faccia di `apply`), con lo storico `reviewNotes`.
 4. **Wizard**: la faccia guidata della config del locale (i cinque assi del tenant). Qui si
@@ -42,6 +54,7 @@ condividono con una dipendenza controllata, non fondendo i due progetti.
 6. **Materializzazione**: dall'`approvato` al progetto operativo (seed della config + menu;
    `seed-from-draft` del motore è il seam). Manuale finché il volume non giustifica
    l'automazione.
+7. **App Check** (reCAPTCHA v3) prima del go-live pubblico: l'hub accetta registrazioni esterne.
 
 ## ⚠️ Trappole note (ereditate dal motore)
 - **Rete aziendale**: proxy blocca spesso `vercel dev` ("fetch failed"); Google/Gemini è
