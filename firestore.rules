@@ -1,0 +1,99 @@
+rules_version = '2';
+
+/* ============================================================================
+   Regole Firestore dell'HUB · collezione `locali/{id}`
+   ----------------------------------------------------------------------------
+   Rispecchiano la macchina a stati del dominio (#0) e usano l'identità del
+   blocco #1: `request.auth.uid` per la proprietà (owner), il custom claim
+   `admin` per il super-admin. Questa è la VERITÀ di sicurezza; lo store nel
+   client non è autorità.
+
+   Guardrail volutamente "largo" sulla forma (come nel motore): validiamo i
+   tipi e le TRANSIZIONI, non ogni singolo campo. Il contenuto fine (config del
+   wizard) sarà governato quando la sua forma sarà definita.
+
+   ⚠️ Test regole (emulatore + Java) NON eseguiti in questo blocco: da aggiungere
+   con `@firebase/rules-unit-testing`.
+   ========================================================================== */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    match /locali/{localeId} {
+      function existing() { return resource.data; }
+      function incoming() { return request.resource.data; }
+      function isOwnerDoc() {
+        return isSignedIn() && request.auth.uid == existing().ownerUid;
+      }
+
+      // Forma valida (guardrail largo): tipi e stato in enum.
+      function validShape(d) {
+        return d.name is string && d.name.size() > 0 && d.name.size() <= 80
+          && d.ownerUid is string
+          && d.status in ['bozza', 'in_revisione', 'approvato', 'attivo', 'sospeso']
+          && d.reviewNotes is list
+          && d.createdAt is int && d.updatedAt is int;
+      }
+
+      // Transizioni consentite all'OWNER del documento.
+      function ownerTransition(from, to) {
+        return (from == 'bozza' && to == 'in_revisione')     // submit
+            || (from == 'in_revisione' && to == 'bozza');    // withdraw
+      }
+      // Transizioni consentite all'ADMIN.
+      function adminTransition(from, to) {
+        return (from == 'in_revisione' && to == 'approvato') // approve
+            || (from == 'in_revisione' && to == 'bozza')     // reject
+            || (from == 'approvato' && to == 'attivo')       // activate
+            || (from == 'attivo' && to == 'sospeso')         // suspend
+            || (from == 'sospeso' && to == 'attivo');        // resume
+      }
+
+      // ownerUid e createdAt non cambiano mai in un update.
+      function immutableKept() {
+        return incoming().ownerUid == existing().ownerUid
+            && incoming().createdAt == existing().createdAt;
+      }
+
+      // READ: l'owner legge i propri; l'admin legge tutto.
+      allow read: if isAdmin() || isOwnerDoc();
+
+      // CREATE: un utente autenticato crea un PROPRIO locale, in bozza, pulito.
+      allow create: if isSignedIn()
+        && incoming().ownerUid == request.auth.uid
+        && incoming().status == 'bozza'
+        && incoming().reviewNotes.size() == 0
+        && validShape(incoming());
+
+      // UPDATE: (a) edit dei dati in bozza dall'owner, stato invariato; oppure
+      //         (b) una transizione di stato lecita per il ruolo dell'attore.
+      allow update: if validShape(incoming()) && immutableKept() && (
+        ( existing().status == 'bozza'
+          && incoming().status == 'bozza'
+          && isOwnerDoc() )
+        ||
+        ( isOwnerDoc()
+          && incoming().status != existing().status
+          && ownerTransition(existing().status, incoming().status) )
+        ||
+        ( isAdmin()
+          && incoming().status != existing().status
+          && adminTransition(existing().status, incoming().status) )
+      );
+
+      // DELETE: solo admin (bonifica). L'owner non cancella.
+      allow delete: if isAdmin();
+    }
+
+    // Tutto il resto è chiuso.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
