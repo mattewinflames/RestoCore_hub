@@ -1,0 +1,296 @@
+/* ============================================================================
+   RestoCore Hub — sistema visivo
+   Carta calda + pannello brand verde oliva + accento ambra brace.
+   Font di sistema (nessuna dipendenza da Google Fonts: coerente col vincolo
+   proxy/GDPR del motore). Personalità da colore, layout e trattamento del tipo.
+   ========================================================================== */
+:root {
+  --rc-ink: #1b1e19;
+  --rc-paper: #f5f3ee;
+  --rc-surface: #fbfaf6;
+  --rc-olive: #38472a;
+  --rc-olive-deep: #2a3620;
+  --rc-amber: #dd9b00;
+  --rc-amber-bright: #f2c14e;
+  --rc-stone: #e3ded1;
+  --rc-muted: #6c6c60;
+  --rc-cream: #efeadd;
+  --rc-danger: #a83a1c;
+
+  --rc-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --rc-radius: 12px;
+  --rc-shadow: 0 1px 2px rgba(27, 30, 25, 0.06), 0 8px 24px rgba(27, 30, 25, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--rc-sans);
+  color: var(--rc-ink);
+  background: var(--rc-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Layout split -------------------------------------------------- */
+.rc-app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .rc-split { grid-template-columns: 1.05fr 1fr; }
+}
+
+/* ---------- Pannello brand (oliva) --------------------------------------- */
+.rc-brand {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--rc-olive) 0%, var(--rc-olive-deep) 100%);
+  color: var(--rc-cream);
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+}
+/* trama "piastra": griglia di punti tenue */
+.rc-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(239, 234, 221, 0.10) 1.4px, transparent 1.6px);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+.rc-brand > * { position: relative; }
+
+.rc-wordmark {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.rc-wordmark small {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--rc-amber-bright);
+  border: 1px solid rgba(242, 193, 78, 0.4);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.rc-thesis {
+  font-size: clamp(28px, 3.4vw, 42px);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  max-width: 12ch;
+}
+.rc-thesis em {
+  font-style: normal;
+  color: var(--rc-amber-bright);
+}
+.rc-sub {
+  margin-top: 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(239, 234, 221, 0.78);
+  max-width: 34ch;
+}
+
+/* ---------- Signature: il percorso di onboarding -------------------------- */
+.rc-path { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rc-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid rgba(239, 234, 221, 0.14);
+}
+.rc-step:last-child { border-bottom: 1px solid rgba(239, 234, 221, 0.14); }
+.rc-step .n {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--rc-amber-bright);
+  letter-spacing: 0.08em;
+}
+.rc-step .t { font-weight: 600; font-size: 15px; }
+.rc-step .d { display: block; font-weight: 400; font-size: 13px; color: rgba(239, 234, 221, 0.62); margin-top: 2px; }
+
+/* ---------- Pannello form ------------------------------------------------- */
+.rc-auth {
+  padding: 48px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rc-paper);
+}
+.rc-card { width: 100%; max-width: 380px; }
+
+.rc-h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+.rc-lede { margin: 0 0 26px; color: var(--rc-muted); font-size: 14px; line-height: 1.5; }
+
+.rc-field { margin-bottom: 16px; }
+.rc-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.rc-input {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  padding: 11px 13px;
+  border: 1px solid var(--rc-stone);
+  border-radius: 10px;
+  background: var(--rc-surface);
+  color: var(--rc-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.rc-input::placeholder { color: #a6a598; }
+.rc-input:focus-visible {
+  outline: none;
+  border-color: var(--rc-olive);
+  box-shadow: 0 0 0 3px rgba(56, 71, 42, 0.14);
+}
+
+/* ---------- Bottoni ------------------------------------------------------- */
+.rc-btn {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform 0.05s, background-color 0.15s, border-color 0.15s;
+}
+.rc-btn:active { transform: translateY(1px); }
+.rc-btn:disabled { opacity: 0.55; cursor: default; }
+.rc-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(221, 155, 0, 0.35); }
+
+.rc-btn-primary { background: var(--rc-amber); color: #241a00; }
+.rc-btn-primary:hover:not(:disabled) { background: #c98d00; }
+
+.rc-btn-ghost {
+  background: var(--rc-surface);
+  border-color: var(--rc-stone);
+  color: var(--rc-ink);
+}
+.rc-btn-ghost:hover:not(:disabled) { border-color: #c9c3b3; }
+
+/* ---------- Divisore "oppure" -------------------------------------------- */
+.rc-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--rc-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.rc-or::before, .rc-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rc-stone);
+}
+
+/* ---------- Messaggi ------------------------------------------------------ */
+.rc-error {
+  background: #f7e9e3;
+  border: 1px solid #e6c3b5;
+  color: var(--rc-danger);
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+
+.rc-switch { margin-top: 22px; font-size: 14px; color: var(--rc-muted); text-align: center; }
+.rc-link {
+  color: var(--rc-olive);
+  font-weight: 600;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rc-link:focus-visible { outline: 2px solid var(--rc-olive); outline-offset: 2px; border-radius: 3px; }
+
+/* ---------- Google mark --------------------------------------------------- */
+.rc-g { width: 18px; height: 18px; flex: none; }
+
+/* ---------- Home (post-login) -------------------------------------------- */
+.rc-home {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+.rc-home-card {
+  max-width: 440px;
+  width: 100%;
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-stone);
+  border-radius: var(--rc-radius);
+  box-shadow: var(--rc-shadow);
+  padding: 34px;
+}
+.rc-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rc-olive);
+  background: #e8ecd9;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+.rc-home-card h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.02em; }
+.rc-home-card p { margin: 0 0 22px; color: var(--rc-muted); line-height: 1.55; font-size: 15px; }
+.rc-home-who { font-weight: 600; color: var(--rc-ink); }
+.rc-btn-inline { width: auto; padding: 10px 18px; }
+
+/* ---------- Loading ------------------------------------------------------- */
+.rc-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rc-muted);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
